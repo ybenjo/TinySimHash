@@ -6,7 +6,7 @@ simhashの練習、及び関連検索用
 
 ## 環境
 
-gcc 4.2.1、tr1/unordered\_mapに依存
+gcc 4.2.1、tr1/unordered\_mapに依存  
 テストはgoogletestを使用
 
 ## データ
