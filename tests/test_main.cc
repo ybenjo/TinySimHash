@@ -34,14 +34,6 @@ TEST_F(SimHashModule, split_string_case_no_delimiter){
   EXPECT_EQ("1234567890", ret[0]);
 }
 
-TEST_F(SimHashModule, set_one_data_case){
-  string str = "1 1:1 2:2 3:3";
-  sh.set_one_data(str);
-  EXPECT_EQ(1, sh.get_feature(1, 1));
-  EXPECT_EQ(2, sh.get_feature(1, 2));
-  EXPECT_EQ(3, sh.get_feature(1, 3));
-}
-
 TEST_F(SimHashModule, bit_shuffle){
   EXPECT_EQ(68, sh.bit_shuffle(21, 3, 5));
 }
@@ -65,7 +57,6 @@ TEST_F(SimHashModule, convert_data_to_hash_complicated_case){
   data.push_back(make_pair(3, 4));
   EXPECT_EQ(3, sh.convert_data_to_hash(data) );
 }
-
 
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);

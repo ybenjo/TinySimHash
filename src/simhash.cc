@@ -27,17 +27,8 @@ void SimHash::set_one_data(string str){
       exit(1);
     }
     unint f_id = atoi( param[0].c_str() );
-    feature_map[make_pair(d_id, f_id)] = atof(param[1].c_str());
-    each_feature_list[d_id].push_back(f_id);
+    feature_table[d_id].push_back( make_pair(f_id, atof(param[1].c_str())) );
     feature_list.push_back(f_id);
-  }
-}
-
-double SimHash::get_feature(unint d_id, unint f_id){
-  if(feature_map.end() != feature_map.find(make_pair(d_id, f_id))){
-    return feature_map[make_pair(d_id, f_id)];
-  }else{
-    return 0.0;
   }
 }
 
@@ -46,10 +37,12 @@ void SimHash::initialize(){
   srand(time(0));
 }
 
+//0 以上 limit 未満の乱数取得
 unint SimHash::get_random(unint limit){
   return rand() / (RAND_MAX / (limit));
 }
 
+//v のビット列をシャッフル(を近似)
 unint SimHash::bit_shuffle(unint v, unint a, unint b, unint p){
   unint this_p = p;
   if(p == 0){this_p = PRIME;}
@@ -57,8 +50,12 @@ unint SimHash::bit_shuffle(unint v, unint a, unint b, unint p){
 }
 
 unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
+  //この v[i] の正負が最終的なハッシュ値におけるiビット目の1/0になる
+  //とりあえず uint64_t で決め打ちしてるので要素数64で初期化
   int v[64] = {0};
   for(vector<pair<unint, double> >::const_iterator f = data.begin(); f != data.end(); ++f){
+    //特徴の id をそのまま特徴に対するハッシュとして使う
+    //あとはそれから1ビットずつ取得
     unint h = (*f).first;
     for(int i = 0; i < 64; ++i){
       if(h & 1){
@@ -70,13 +67,14 @@ unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
     }
   }
 
-  for(int x = 63; x >= 0; --x){cout << v[x];}
-  cout << endl;
   unint h_value = 0;
+  //vの後ろからビットを左シフトで押しこんでいく
   for(int i = 63; i >= 0; --i){
     if(v[i] >= 0){
+      //左シフトさせて一番下のビットを立てる
       h_value = (h_value << 1) | 1;
     }else{
+      //左シフトさせるだけ
       h_value = (h_value << 1);
     }
   }

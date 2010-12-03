@@ -13,7 +13,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+//ハッシュ値は 64ビットで決め打ち
 typedef uint64_t unint;
+//ついでに素数の最大値を固定しておく
 #define PRIME 2147483647;
 
 //unordered_map に pair を使うための関数オブジェクト
@@ -57,15 +59,14 @@ public:
   void set_one_data(std::string str);
 
   //getter
-  double get_feature(unint d_id, unint f_id);
   unint get_random(unint limit);
 
   unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
   
 private:
-  std::tr1::unordered_map<std::pair<unint, unint>, double, myhash, myeq> feature_map;
-  std::tr1::unordered_map<unint, std::vector<unint> > each_feature_list;
+  std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
+  std::tr1::unordered_map<unint, unint> hash_table;
   std::vector<unint> feature_list;
   bool debug_flag;
 };
