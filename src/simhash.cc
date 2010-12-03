@@ -73,13 +73,13 @@ unint SimHash::bit_shuffle(unint v, unint a, unint b, unint p){
 
 unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
   //この v[i] の正負が最終的なハッシュ値におけるiビット目の1/0になる
-  //とりあえず uint64_t で決め打ちしてるので要素数64で初期化
-  int v[64] = {0};
+  //とりあえず uint32_t で決め打ちしてるので要素数32で初期化
+  int v[sizeof(unint)*8] = {0};
   for(vector<pair<unint, double> >::const_iterator f = data.begin(); f != data.end(); ++f){
     //特徴の id をそのまま特徴に対するハッシュとして使う
     //あとはそれから1ビットずつ取得
     unint h = (*f).first;
-    for(int i = 0; i < 64; ++i){
+    for(int i = 0; i < sizeof(unint)*8; ++i){
       if(h & 1){
 	v[i] += (*f).second;
       }else{
@@ -91,7 +91,7 @@ unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
 
   unint h_value = 0;
   //vの後ろからビットを左シフトで押しこんでいく
-  for(int i = 63; i >= 0; --i){
+  for(int i = sizeof(unint)*8 - 1; i >= 0; --i){
     if(v[i] >= 0){
       //左シフトさせて一番下のビットを立てる
       h_value = (h_value << 1) | 1;

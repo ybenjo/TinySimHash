@@ -16,8 +16,8 @@
 #include <ctime>
 #include <unistd.h>
 
-//ハッシュ値は 64ビットで決め打ち
-typedef uint64_t unint;
+//ハッシュ値は 32ビット
+typedef uint32_t unint;
 //ついでに素数の最大値を固定しておく
 #define PRIME 2147483647;
 
