@@ -5,29 +5,30 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include <unordered_map>
+#include <tr1/unordered_map>
 #include <set>
 #include <vector>
 #include <string>
 #include <algorithm>
 #include <stdlib.h>
 #include <math.h>
-
-using namespace std;
+#include <time.h>
+typedef uint32_t unint;
+#define PRIME 2147483647;
 
 //unordered_map に pair を使うための関数オブジェクト
-struct myeq : std::binary_function<pair<int, int>, pair<int, int>, bool>{
-  bool operator() (const pair<int, int> & x, const pair<int, int> & y) const{
-    return x.first == y.first && x.second == y.second;
+struct myeq : std::binary_function<std::pair<unint, unint>, std::pair<unint, unint>, bool>{
+  bool operator() (const std::pair<unint, unint> & x, const std::pair<unint, unint> & y) const{
+    return x == y;
   }
 };
 
-struct myhash : std::unary_function<pair<int, int>, size_t>{
+struct myhash : std::unary_function<std::pair<unint, unint>, size_t>{
 private:
-  const hash<int> h_int;
+  const std::tr1::hash<unint> h_int;
 public:
   myhash() : h_int() {}
-  size_t operator()(const pair<int, int> & p) const{
+  size_t operator()(const std::pair<unint, unint> & p) const{
     //http://stackoverflow.com/questions/738054/hash-function-for-a-pair-of-long-long
     size_t seed = h_int(p.first);
     return h_int(p.second) + 0x9e3779b9 + (seed<<6) + (seed>>2);
@@ -35,19 +36,40 @@ public:
 };
 
 //pair の second で sort するための関数オブジェクト
-struct myless : std::binary_function<pair<int, int> , pair<int, int>, bool>{
-  bool operator()(const pair<int, int> & x, const pair<int, int> y) const {
+struct myless : std::binary_function<std::pair<unint, unint> , std::pair<unint, unint>, bool>{
+  bool operator()(const std::pair<unint, unint> & x, const std::pair<unint, unint> y) const {
     return x.second < y.second;
   }
 };
 
 class SimHash{
 public:
-  SimHash(){}
-  vector<string> split_string(const string& s, const string& c);
-  void set_one_data(string str);
+  SimHash(){
+    initialize();
+  }
+
+  //util
+  void initialize();
+  std::vector<std::string> split_string(std::string s, std::string c);
+
+  //setter
+  void set_debug_flag(bool flag){debug_flag = flag;};
+  void set_one_data(std::string str);
+  void set_hash_params();
+  void set_prime_table();
+
+  //getter
+  double get_feature(unint d_id, unint f_id);
+  unint get_random(unint limit);
+
+  unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
+  
 private:
-  unordered_map<pair<int, int>, double> feature_map;
+  std::tr1::unordered_map<std::pair<unint, unint>, double, myhash, myeq> feature_map;
+  std::tr1::unordered_map<unint, std::vector<unint> > shuffle_params;
+  std::tr1::unordered_map<unint, std::vector<unint> > hash_params;
+  std::vector<unint> feature_list;
+  bool debug_flag;
 };
 
 #endif //__class__SimHash__

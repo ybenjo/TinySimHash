@@ -1,7 +1,7 @@
 /data
 *tmp*
 *.o
-*_test
+test
 *.out
 main
 result*

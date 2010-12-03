@@ -1,7 +1,6 @@
 # Makefile
-
-CXX=/opt/local/bin/g++-mp-4.4
-CXX_FLAGS=-O3 -Wall -std=c++0x
+CXX=g++
+CXX_FLAGS=-O3 -Wall
 
 test: simhash.o
 	${CXX} ${CXX_FLAGS} -lgtest -lpthread ./tests/test_main.cc simhash.o -o test
