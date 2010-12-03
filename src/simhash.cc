@@ -39,7 +39,6 @@ void SimHash::set_one_data(string str){
     
     unint f_id = atoi( param[0].c_str() );
     feature_table[d_id].push_back( make_pair(f_id, atof(param[1].c_str())) );
-    feature_list.push_back(f_id);
   }
 }
 
@@ -47,7 +46,8 @@ void SimHash::set_data_from_file(char* input_file_name){
   ifstream ifs;
   string tmp;
   vector<string> ret_str;
-  ifs.open(input_file_name, ios::in);
+  this->input_file_name = input_file_name;
+  ifs.open(this->input_file_name, ios::in);
   while(ifs && getline(ifs, tmp)){
     set_one_data(tmp);
   }
@@ -57,7 +57,30 @@ void SimHash::set_data_from_file(char* input_file_name){
 void SimHash::initialize(){
   set_debug_flag(false);
   srand(time(0));
+  input_file_name = NULL;
 }
+
+
+void SimHash::output_hash_table(){
+  ostringstream oss;
+  vector<string> ret = split_string(input_file_name, ".");
+  if(ret.size() > 1){
+    for(int i = 0; i < ret.size() - 1; ++i){
+      oss << ret[i];
+    }
+  }else{
+    oss << ret[0];
+  }
+  oss << ".hash";
+
+  ofstream ofs;
+  ofs.open((oss.str()).c_str());
+  for(unordered_map<unint, unint>::iterator i = hash_table.begin(); i != hash_table.end(); ++i){
+    ofs << i->first << " " << i->second << endl;
+  }
+  ofs.close();
+}
+
 
 //0 以上 limit 未満の乱数取得
 unint SimHash::get_random(unint limit){
@@ -106,7 +129,6 @@ unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
 void SimHash::set_hash_table_from_feature_table(){
   unordered_map<unint, vector<pair<unint, double> > >::iterator i;
   for(i = feature_table.begin(); i != feature_table.end(); ++i){
-    cout << i->first << endl;
     unint d_id = i->first;
     hash_table[d_id] = convert_data_to_hash(i->second);
   }

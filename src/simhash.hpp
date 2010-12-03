@@ -15,6 +15,7 @@
 #include <time.h>
 #include <ctime>
 #include <unistd.h>
+#include <getopt.h>
 
 //ハッシュ値は 32ビット
 typedef uint32_t unint;
@@ -66,14 +67,18 @@ public:
   //getter
   unint get_random(unint limit);
 
+  //output
+  void output_hash_table();
+  
+  //calculate
   unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
   std::tr1::unordered_map<unint, unint> hash_table;
-  std::vector<unint> feature_list;
   bool debug_flag;
+  char* input_file_name;
 };
 
 #endif //__class__SimHash__
