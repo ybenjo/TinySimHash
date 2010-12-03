@@ -13,6 +13,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <ctime>
+#include <unistd.h>
+
 //ハッシュ値は 64ビットで決め打ち
 typedef uint64_t unint;
 //ついでに素数の最大値を固定しておく
@@ -57,6 +60,8 @@ public:
   //setter
   void set_debug_flag(bool flag){debug_flag = flag;};
   void set_one_data(std::string str);
+  void set_data_from_file(char* input_file_name);
+  void set_hash_table_from_feature_table();
 
   //getter
   unint get_random(unint limit);

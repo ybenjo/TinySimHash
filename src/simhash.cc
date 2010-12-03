@@ -18,18 +18,40 @@ vector<string> SimHash::split_string(string s, string c){
 void SimHash::set_one_data(string str){
   //str => d_id \s param_id : param_score
   vector<string> d = split_string(str, " ");
+
+  //debug mode
+  if(debug_flag && d[0] == str){
+    cout << "Invalid format : "
+	 << str << endl;
+    exit(1);
+  }
+  
   unint d_id = atoi(d[0].c_str());
   for(vector<string>::iterator i = d.begin() + 1; i != d.end(); ++i){
     vector<string> param = split_string(*i, ":");
+
+    //debug mode
     if(debug_flag && param[0] == *i){
       cout << "Invalid format : "
 	   << param[0] << endl;
       exit(1);
     }
+    
     unint f_id = atoi( param[0].c_str() );
     feature_table[d_id].push_back( make_pair(f_id, atof(param[1].c_str())) );
     feature_list.push_back(f_id);
   }
+}
+
+void SimHash::set_data_from_file(char* input_file_name){
+  ifstream ifs;
+  string tmp;
+  vector<string> ret_str;
+  ifs.open(input_file_name, ios::in);
+  while(ifs && getline(ifs, tmp)){
+    set_one_data(tmp);
+  }
+  ifs.close();
 }
 
 void SimHash::initialize(){
@@ -79,4 +101,13 @@ unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
     }
   }
   return h_value;
+}
+
+void SimHash::set_hash_table_from_feature_table(){
+  unordered_map<unint, vector<pair<unint, double> > >::iterator i;
+  for(i = feature_table.begin(); i != feature_table.end(); ++i){
+    cout << i->first << endl;
+    unint d_id = i->first;
+    hash_table[d_id] = convert_data_to_hash(i->second);
+  }
 }

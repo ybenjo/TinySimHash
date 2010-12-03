@@ -3,5 +3,5 @@
 *.o
 test
 *.out
-main
+simhash
 result*
