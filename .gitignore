@@ -1,0 +1,7 @@
+/data
+*tmp*
+*.o
+*_test
+*.out
+main
+result*
