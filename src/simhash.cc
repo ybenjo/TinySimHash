@@ -26,15 +26,15 @@ void SimHash::set_one_data(string str){
 	   << param[0] << endl;
       exit(1);
     }
-    unint f_id = atoi(param[0].c_str());
+    unint f_id = atoi( param[0].c_str() );
     feature_map[make_pair(d_id, f_id)] = atof(param[1].c_str());
+    each_feature_list[d_id].push_back(f_id);
     feature_list.push_back(f_id);
   }
 }
 
 double SimHash::get_feature(unint d_id, unint f_id){
-  bool exist_1 = feature_map.end() != feature_map.find(make_pair(d_id, f_id));
-  if(exist_1){
+  if(feature_map.end() != feature_map.find(make_pair(d_id, f_id))){
     return feature_map[make_pair(d_id, f_id)];
   }else{
     return 0.0;
@@ -56,15 +56,29 @@ unint SimHash::bit_shuffle(unint v, unint a, unint b, unint p){
   return (a*v + b) % this_p;
 }
 
-void SimHash::set_hash_params(){
-  sort(feature_list.begin(), feature_list.end());
-  feature_list.erase( unique( feature_list.begin(), feature_list.end() ), feature_list.end());
-  
-  for(vector<unint>::iterator i = feature_list.begin(); i != feature_list.end(); ++i){
-    vector<unint> params;
-    unint tmp = PRIME;
-    params.push_back( get_random(tmp) );
-    params.push_back( get_random(tmp) );
-    hash_params[*i] = params;
+unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
+  int v[64] = {0};
+  for(vector<pair<unint, double> >::const_iterator f = data.begin(); f != data.end(); ++f){
+    unint h = (*f).first;
+    for(int i = 0; i < 64; ++i){
+      if(h & 1){
+	v[i] += (*f).second;
+      }else{
+	v[i] -= (*f).second;
+      }
+      h = h >> 1;
+    }
   }
+
+  for(int x = 63; x >= 0; --x){cout << v[x];}
+  cout << endl;
+  unint h_value = 0;
+  for(int i = 63; i >= 0; --i){
+    if(v[i] >= 0){
+      h_value = (h_value << 1) | 1;
+    }else{
+      h_value = (h_value << 1);
+    }
+  }
+  return h_value;
 }

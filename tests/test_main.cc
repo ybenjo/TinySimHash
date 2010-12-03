@@ -46,6 +46,26 @@ TEST_F(SimHashModule, bit_shuffle){
   EXPECT_EQ(68, sh.bit_shuffle(21, 3, 5));
 }
 
+TEST_F(SimHashModule, convert_data_to_hash_simple_case1){
+  vector<pair<unint, double> > data;
+  data.push_back(make_pair(0, 1));
+  EXPECT_EQ(0, sh.convert_data_to_hash(data) );
+}
+
+TEST_F(SimHashModule, convert_data_to_hash_simple_case2){
+  vector<pair<unint, double> > data;
+  data.push_back(make_pair(8, 1));
+  EXPECT_EQ(8, sh.convert_data_to_hash(data) );
+}
+
+TEST_F(SimHashModule, convert_data_to_hash_complicated_case){
+  vector<pair<unint, double> > data;
+  data.push_back(make_pair(1, 2));
+  data.push_back(make_pair(2, 3));
+  data.push_back(make_pair(3, 4));
+  EXPECT_EQ(3, sh.convert_data_to_hash(data) );
+}
+
 
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);

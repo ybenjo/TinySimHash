@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
-typedef uint32_t unint;
+typedef uint64_t unint;
 #define PRIME 2147483647;
 
 //unordered_map に pair を使うための関数オブジェクト
@@ -55,19 +55,17 @@ public:
   //setter
   void set_debug_flag(bool flag){debug_flag = flag;};
   void set_one_data(std::string str);
-  void set_hash_params();
-  void set_prime_table();
 
   //getter
   double get_feature(unint d_id, unint f_id);
   unint get_random(unint limit);
 
+  unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
   
 private:
   std::tr1::unordered_map<std::pair<unint, unint>, double, myhash, myeq> feature_map;
-  std::tr1::unordered_map<unint, std::vector<unint> > shuffle_params;
-  std::tr1::unordered_map<unint, std::vector<unint> > hash_params;
+  std::tr1::unordered_map<unint, std::vector<unint> > each_feature_list;
   std::vector<unint> feature_list;
   bool debug_flag;
 };
