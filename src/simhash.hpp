@@ -20,7 +20,7 @@
 //ハッシュ値は 32ビット
 typedef uint32_t unint;
 //ついでに素数の最大値を固定しておく
-#define PRIME 2147483647;
+#define PRIME 2147483647
 
 //unordered_map に pair を使うための関数オブジェクト
 struct myeq : std::binary_function<std::pair<unint, unint>, std::pair<unint, unint>, bool>{
@@ -29,6 +29,7 @@ struct myeq : std::binary_function<std::pair<unint, unint>, std::pair<unint, uni
   }
 };
 
+//unordered_map に pair を使うための関数オブジェクト
 struct myhash : std::unary_function<std::pair<unint, unint>, size_t>{
 private:
   const std::tr1::hash<unint> h_int;
@@ -42,11 +43,19 @@ public:
 };
 
 //pair の second で sort するための関数オブジェクト
-struct myless : std::binary_function<std::pair<unint, unint> , std::pair<unint, unint>, bool>{
-  bool operator()(const std::pair<unint, unint> & x, const std::pair<unint, unint> y) const {
+struct pairless : std::binary_function<std::pair<unint, unint> , std::pair<unint, unint>, bool>{
+  bool operator()(const std::pair<unint, unint> & x, const std::pair<unint, unint> & y) const {
     return x.second < y.second;
   }
 };
+
+//pair の first で find するための関数オブジェクト
+struct paireq : std::binary_function<std::pair<unint, unint> , std::pair<unint, unint>, bool>{
+  bool operator()(const std::pair<unint, unint> & x, const std::pair<unint, unint> & y) const {
+    return x.first == y.first;
+  }
+};
+
 
 class SimHash{
 public:
@@ -63,6 +72,8 @@ public:
   void set_one_data(std::string str);
   void set_data_from_file(char* input_file_name);
   void set_hash_table_from_feature_table();
+  void set_hash_table_from_file(char* input_file_name);
+  unint set_query_to_hash_table(char* input_query_name);
 
   //getter
   unint get_random(unint limit);
@@ -73,12 +84,16 @@ public:
   //calculate
   unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
+  void hash_table_bit_shuffle();
+  void hash_table_sort();
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
-  std::tr1::unordered_map<unint, unint> hash_table;
+  std::vector<std::pair<unint, unint> > hash_table;
+  std::tr1::unordered_map<unint, double> query_feature;
   bool debug_flag;
   char* input_file_name;
+  char* input_query_name;
 };
 
 #endif //__class__SimHash__

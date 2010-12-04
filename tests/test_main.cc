@@ -58,6 +58,10 @@ TEST_F(SimHashModule, convert_data_to_hash_complicated_case){
   EXPECT_EQ(3, sh.convert_data_to_hash(data) );
 }
 
+TEST_F(SimHashModule, set_query_to_hash_table){
+  EXPECT_EQ(3, sh.set_query_to_hash_table("./tests/q_test.txt"));
+}
+
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

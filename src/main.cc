@@ -24,7 +24,7 @@ int main(int argc, char **argv){
     if(result == -1) break;
     if(result == 0){
       switch(option_index){
-      case 0 : input_hash_name = optarg; break;
+      case 0 : input_hash_name = optarg;break;
       case 1 : input_feature_name = optarg; break;
       case 2 : query = optarg; break;	
       case 3 : make_hash_flag = true; break;
@@ -50,9 +50,15 @@ int main(int argc, char **argv){
   }
 
   //検索モードにおける例外
+
+  if(!search_flag && query != NULL){
+    cout << "Force search mode." << endl;
+    search_flag = true;
+  }
+
   if(search_flag){
     if(input_hash_name == NULL){
-      if(make_hash_flag){
+      if(!make_hash_flag){
 	cout << "Please specify hash table filename." << endl;
 	cout << "  ./simhash --hash [path] or -h [path]" << endl;
 	exit(1);
@@ -67,12 +73,23 @@ int main(int argc, char **argv){
       exit(1);
     }
   }
+
+
+
+  SimHash sh;
+  sh.set_data_from_file(input_feature_name);
   
   if(make_hash_flag){
     cout << "Running make hash mode." << endl;
-    SimHash sh;
-    sh.set_data_from_file(input_feature_name);
     sh.set_hash_table_from_feature_table();
     sh.output_hash_table();
+  }
+
+  if(search_flag){
+    cout << "Running search mode." << endl;
+    sh.set_hash_table_from_file(input_hash_name);
+    sh.set_query_to_hash_table(query);
+    sh.hash_table_bit_shuffle();
+    sh.hash_table_sort();
   }
 }
