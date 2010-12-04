@@ -42,14 +42,13 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 
 # ToDo
 
-* ハッシュファイルの圧縮。及びRead/Writeの高速化→boostでシリアライズ
+* 元論文に書かれているハッシュの圧縮。及びRead/Writeの高速化
 * テストの充実
 * 引数チェック
 * ハッシュテーブルファイルを生成せずに検索のみを行うモード
 
 # リファレンス
-Ravichandran D, Pantel P, Hovy E.
-Randomized algorithms and nlp: using locality sensitive hash function for high speed noun clustering.
-In: Proceedings of the 43rd Annual Meeting on Association for Computational Linguistics. Association for Computational Linguistics;
-2005:622-629.
-
+Manku GS, Jain A, Das Sarma A.
+Detecting near-duplicates for web crawling.
+Proceedings of the 16th international conference on World Wide Web - WWW '07. 2007:141.
+次元が高い場合に関してのsimhashの計算 - tsubosakaの日記 - http://d.hatena.ne.jp/tsubosaka/20090928/1254147181
