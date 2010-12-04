@@ -4,6 +4,9 @@
 
 simhashの練習、及び関連検索用
 
+## 内容
+simhash。データを32bitのハッシュ値で表現して近傍探索します。
+
 ## 環境
 
 gcc 4.2.1、tr1/unordered\_mapに依存  
@@ -50,5 +53,5 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 # リファレンス
 Manku GS, Jain A, Das Sarma A.
 Detecting near-duplicates for web crawling.
-Proceedings of the 16th international conference on World Wide Web - WWW '07. 2007:141.
+Proceedings of the 16th international conference on World Wide Web - WWW '07. 2007:141.  
 次元が高い場合に関してのsimhashの計算 - tsubosakaの日記 - http://d.hatena.ne.jp/tsubosaka/20090928/1254147181
