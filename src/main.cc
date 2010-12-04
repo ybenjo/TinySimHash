@@ -9,7 +9,7 @@ int main(int argc, char **argv){
   bool debug_flag = false, make_hash_flag = false, search_flag = false;
   char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL;
   int result = 0, option_index = 0;
-  unint near_b = 0;
+  unint near_b = 10;
 
   struct option lngopt[] = {
     {"hash", 1, NULL, 0},
@@ -54,7 +54,6 @@ int main(int argc, char **argv){
   //検索モードにおける例外
 
   if(!search_flag && query != NULL){
-    cout << "Force search mode." << endl;
     search_flag = true;
   }
 
@@ -86,7 +85,7 @@ int main(int argc, char **argv){
     sh.set_hash_table_from_feature_table();
     sh.output_hash_table();
   }
-
+  
   if(search_flag){
     cout << "Running search mode." << endl;
     sh.set_hash_table_from_file(input_hash_name);
@@ -94,5 +93,7 @@ int main(int argc, char **argv){
     sh.hash_table_bit_shuffle();
     sh.hash_table_sort();
     sh.search_b_nearest_data(near_b);
+    sh.calc_b_nearest_cosine_distance(near_b);
+    sh.output_near_cosines();
   }
 }

@@ -77,6 +77,7 @@ void SimHash::initialize(){
   set_debug_flag(false);
   srand(time(0));
   input_file_name = NULL;
+  q_id = PRIME;
 }
 
 
@@ -162,6 +163,8 @@ unint SimHash::set_query_to_hash_table(char* input_query_name){
   ifstream ifs;
   string tmp;
 
+  this->input_query_name = input_query_name;
+
   vector<pair<unint, double> > features;
   //tmp => param_id : param_score \s param_id : param_score...
   ifs.open(input_query_name, ios::in);
@@ -218,7 +221,6 @@ void SimHash::hash_table_sort(){
 vector<unint> SimHash::search_b_nearest_data(unint b){
   vector<pair<unint, unint> >::iterator query;
   vector<unint> nears;
-  unint q_id = PRIME;
   query = find(hash_table.begin(), hash_table.end(), make_pair(q_id, query_hash));
 
   if(query != hash_table.end()){
@@ -239,6 +241,46 @@ vector<unint> SimHash::search_b_nearest_data(unint b){
   return nears;
 }
 
-double SimHash::calculate_cosine_distance(unint d_id_1, unint d_id_2){
+double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
+  double norm_q = 0.0, norm_d = 0.0, inner = 0.0;
   
+  vector<pair<unint, double> > d_feature = feature_table[d_id];
+  for(vector<pair<unint, double> >::iterator i = d_feature.begin(); i != d_feature.end(); ++i){
+    norm_d += pow((*i).second, 2.0);
+    if(query_feature.end() != query_feature.find((*i).first)){
+      inner += (*i).second * query_feature[(*i).first];
+    }
+  }
+
+  for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
+    norm_q += pow(i->second, 2.0);
+  }
+
+  if(norm_q > 0 && norm_d > 0){
+    return inner / (pow(norm_q, 0.5) * pow(norm_d, 0.5));
+  }else{
+    return 0.0;
+  }
+}
+
+
+void SimHash::calc_b_nearest_cosine_distance(unint b){
+  vector<unint> near_ids = search_b_nearest_data(b);
+
+  for(vector<unint>::iterator id = near_ids.begin(); id != near_ids.end(); ++id){
+    near_cosines.push_back(make_pair(*id, calculate_cosine_distance(q_id, *id)));
+  }
+
+  sort(near_cosines.begin(), near_cosines.end(), pairlessdouble());
+}
+
+void SimHash::output_near_cosines(){
+  ostringstream oss;
+  oss << input_query_name << ".out";
+  ofstream ofs;
+  ofs.open((oss.str()).c_str());
+  for(vector<pair<unint, double> >::iterator i = near_cosines.begin(); i != near_cosines.end(); ++i){
+    ofs << (*i).first << "," << (*i).second << endl;
+  }
+  ofs.close();
 }

@@ -49,6 +49,14 @@ struct pairless : std::binary_function<std::pair<unint, unint> , std::pair<unint
   }
 };
 
+//pair の second で "降順で" sort するための関数オブジェクト
+struct pairlessdouble : std::binary_function<std::pair<unint, double> , std::pair<unint, double>, bool>{
+  bool operator()(const std::pair<unint, double> & x, const std::pair<unint, double> & y) const {
+    //return x.second < y.second;
+    return x.second > y.second;
+  }
+};
+
 class SimHash{
 public:
   SimHash(){
@@ -72,6 +80,7 @@ public:
 
   //output
   void output_hash_table();
+  void output_near_cosines();
   
   //calculate
   unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);
@@ -80,16 +89,19 @@ public:
   void hash_table_sort();
   std::vector<unint> search_b_nearest_data(unint b);
   double calculate_cosine_distance(unint d_id_1, unint d_id_2);
+  void calc_b_nearest_cosine_distance(unint b);
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
   std::vector<std::pair<unint, unint> > hash_table;
   std::tr1::unordered_map<unint, double> query_feature;
+  std::vector<std::pair<unint, double> > near_cosines;
   unint query_hash;
   bool debug_flag;
   char* input_file_name;
   char* input_query_name;
-  unint near_b; 
+  unint near_b;
+  unint q_id;
 };
 
 #endif //__class__SimHash__
