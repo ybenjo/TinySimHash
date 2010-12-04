@@ -14,6 +14,15 @@ gcc 4.2.1、tr1/unordered\_mapに依存
 LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切り、特徴量はカンマ区切り。
 	data_id \s feature_id:value \s feature_id:value \s ...
 
+## クエリ
+
+1行のみ。特徴量ごとにスペースで区切り、特徴量はカンマ区切り。
+	feature_id:value \s feature_id:value \s ...
+
 	
 ## リファレンス
-Manku GS, Jain A, Das Sarma A. Detecting near-duplicates for web crawling. Proceedings of the 16th international conference on World Wide Web - WWW'07. 2007:141.
+Ravichandran D, Pantel P, Hovy E.
+Randomized algorithms and nlp: using locality sensitive hash function for high speed noun clustering.
+In: Proceedings of the 43rd Annual Meeting on Association for Computational Linguistics. Association for Computational Linguistics;
+2005:622-629.
+

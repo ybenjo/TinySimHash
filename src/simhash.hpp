@@ -49,14 +49,6 @@ struct pairless : std::binary_function<std::pair<unint, unint> , std::pair<unint
   }
 };
 
-//pair の first で find するための関数オブジェクト
-struct paireq : std::binary_function<std::pair<unint, unint> , std::pair<unint, unint>, bool>{
-  bool operator()(const std::pair<unint, unint> & x, const std::pair<unint, unint> & y) const {
-    return x.first == y.first;
-  }
-};
-
-
 class SimHash{
 public:
   SimHash(){
@@ -86,14 +78,18 @@ public:
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
   void hash_table_bit_shuffle();
   void hash_table_sort();
+  std::vector<unint> search_b_nearest_data(unint b);
+  double calculate_cosine_distance(unint d_id_1, unint d_id_2);
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
   std::vector<std::pair<unint, unint> > hash_table;
   std::tr1::unordered_map<unint, double> query_feature;
+  unint query_hash;
   bool debug_flag;
   char* input_file_name;
   char* input_query_name;
+  unint near_b; 
 };
 
 #endif //__class__SimHash__

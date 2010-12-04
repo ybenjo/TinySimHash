@@ -9,6 +9,7 @@ int main(int argc, char **argv){
   bool debug_flag = false, make_hash_flag = false, search_flag = false;
   char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL;
   int result = 0, option_index = 0;
+  unint near_b = 0;
 
   struct option lngopt[] = {
     {"hash", 1, NULL, 0},
@@ -20,7 +21,7 @@ int main(int argc, char **argv){
   };
 
   while(1){
-    result = getopt_long(argc, argv, "f:h:q:ds", lngopt, &option_index);
+    result = getopt_long(argc, argv, "f:h:q:b:ds", lngopt, &option_index);
     if(result == -1) break;
     if(result == 0){
       switch(option_index){
@@ -37,6 +38,7 @@ int main(int argc, char **argv){
       case 'q' : query = optarg; break;
       case 'd' : debug_flag = true; break;
       case 's' : search_flag = true; break;
+      case 'b' : near_b = atoi(optarg); break;
       }
     }
     optarg = NULL; 
@@ -91,5 +93,6 @@ int main(int argc, char **argv){
     sh.set_query_to_hash_table(query);
     sh.hash_table_bit_shuffle();
     sh.hash_table_sort();
+    sh.search_b_nearest_data(near_b);
   }
 }

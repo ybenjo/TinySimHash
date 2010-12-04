@@ -194,8 +194,9 @@ unint SimHash::set_query_to_hash_table(char* input_query_name){
   }
   ifs.close();
 
-  hash_table.push_back(make_pair(d_id, convert_data_to_hash(features)));
-  return convert_data_to_hash(features);
+  query_hash = convert_data_to_hash(features);
+  hash_table.push_back(make_pair(d_id, query_hash));
+  return query_hash;
 }
 
 void SimHash::hash_table_bit_shuffle(){
@@ -204,9 +205,40 @@ void SimHash::hash_table_bit_shuffle(){
   vector<pair<unint, unint> >::iterator i;
   for(i = hash_table.begin(); i != hash_table.end(); ++i){
     (*i).second = bit_shuffle((*i).second, a, b);
+    //クエリのハッシュを更新しておく
+    if((*i).first == PRIME){query_hash = (*i).second;}
   }
 }
 
 void SimHash::hash_table_sort(){
   sort(hash_table.begin(), hash_table.end(), pairless());
+}
+
+//クエリからプラスマイナスb個(最大2b個)取得してそのd_idを返す
+vector<unint> SimHash::search_b_nearest_data(unint b){
+  vector<pair<unint, unint> >::iterator query;
+  vector<unint> nears;
+  unint q_id = PRIME;
+  query = find(hash_table.begin(), hash_table.end(), make_pair(q_id, query_hash));
+
+  if(query != hash_table.end()){
+    //クエリから後ろに最大b個
+    for(int i = 1; (i <= b) && (query + i != hash_table.end()) ; ++i){
+      nears.push_back((*(query+i)).first);
+    }
+
+    //クエリから前に最大b個
+    for(int i = 1; (i <= b); ++i){
+      nears.push_back((*(query-i)).first);
+      if(query-i == hash_table.begin()){
+	break;
+      }
+    }
+    
+  }
+  return nears;
+}
+
+double SimHash::calculate_cosine_distance(unint d_id_1, unint d_id_2){
+  
 }
