@@ -20,10 +20,12 @@ void SimHash::set_one_data(string str){
   vector<string> d = split_string(str, " ");
   
   //debug mode
-  if(debug_flag && d[0] == str){
-    cout << "Invalid format : "
-	 << str << endl;
-    exit(1);
+  if(d[0] == str){
+    if(debug_flag){
+      cout << "Skip this line. "
+	   << "Invalid format : " << str << endl;
+    }
+    return;
   }
   
   unint d_id = atoi(d[0].c_str());
@@ -31,12 +33,13 @@ void SimHash::set_one_data(string str){
     vector<string> param = split_string(*i, ":");
 
     //debug mode
-    if(debug_flag && param[0] == *i){
-      cout << "Invalid format : "
-	   << param[0] << endl;
-      exit(1);
+    if(param[0] == *i){
+      if(debug_flag){
+	cout << "Skip this line. " << str << endl;;
+	cout << "Invalid format : " << param[0] << endl;
+      }
+      return;
     }
-    
     unint f_id = atoi( param[0].c_str() );
     feature_table[d_id].push_back( make_pair(f_id, atof(param[1].c_str())) );
   }
@@ -54,6 +57,16 @@ void SimHash::set_data_from_file(char* input_file_name){
   ifs.close();
 }
 
+void SimHash::set_hash_table_from_line(string str){
+  vector<string> words;
+  stringstream ss(str);
+  string elem;
+  while (ss >> elem){
+    words.push_back(elem);
+  }
+  hash_table.push_back(make_pair(atoi(words[0].c_str()), atoi(words[1].c_str())));
+}
+
 void SimHash::set_hash_table_from_file(char* input_file_name){
   ifstream ifs;
   string tmp;
@@ -61,17 +74,10 @@ void SimHash::set_hash_table_from_file(char* input_file_name){
   vector<string> ret_str;
   ifs.open(input_file_name, ios::in);
   while(ifs && getline(ifs, tmp)){
-    vector<string> words;
-    stringstream ss(tmp);
-    string elem;
-    while (ss >> elem){
-      words.push_back(elem);
-    }
-    hash_table.push_back(make_pair(atoi(words[0].c_str()), atoi(words[1].c_str())));
+    set_hash_table_from_line(tmp);
   }
   ifs.close();
 }
-
 
 void SimHash::initialize(){
   set_debug_flag(false);
@@ -79,7 +85,6 @@ void SimHash::initialize(){
   input_file_name = NULL;
   q_id = PRIME;
 }
-
 
 void SimHash::output_hash_table(){
   ostringstream oss;
@@ -149,7 +154,7 @@ unint SimHash::convert_data_to_hash(const vector<pair<unint, double> >& data){
   }
   return h_value;
 }
- 
+
 void SimHash::set_hash_table_from_feature_table(){
   unordered_map<unint, vector<pair<unint, double> > >::iterator i;
   for(i = feature_table.begin(); i != feature_table.end(); ++i){
@@ -171,20 +176,18 @@ unint SimHash::set_query_to_hash_table(char* input_query_name){
   while(ifs && getline(ifs, tmp)){
     vector<string> d = split_string(tmp, " ");
     
-    //debug mode
-    if(debug_flag && d[0] == tmp){
-      cout << "Invalid format : "
-	   << tmp << endl;
+    if(d[0] == tmp){
+      cout << "Skip this line. "
+	   << "Invalid format : " << tmp << endl;
       exit(1);
     }
 
     for(vector<string>::iterator i = d.begin(); i != d.end(); ++i){
       vector<string> param = split_string(*i, ":");
       
-      //debug mode
-      if(debug_flag && param[0] == *i){
-	cout << "Invalid format : "
-	     << param[0] << endl;
+      if(param[0] == *i){
+	cout << "Skip this line. " << tmp << endl;;
+	cout << "Invalid format : " << param[0] << endl;
 	exit(1);
       }
       unint f_id = atoi( param[0].c_str() );

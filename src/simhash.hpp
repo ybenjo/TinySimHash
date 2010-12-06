@@ -72,6 +72,7 @@ public:
   void set_one_data(std::string str);
   void set_data_from_file(char* input_file_name);
   void set_hash_table_from_feature_table();
+  void set_hash_table_from_line(std::string str);
   void set_hash_table_from_file(char* input_file_name);
   unint set_query_to_hash_table(char* input_query_name);
 

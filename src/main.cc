@@ -78,16 +78,19 @@ int main(int argc, char **argv){
 
 
   SimHash sh;
-  sh.set_data_from_file(input_feature_name);
+  sh.set_debug_flag(debug_flag);
+
   
   if(make_hash_flag){
     cout << "Running make hash mode." << endl;
+    sh.set_data_from_file(input_feature_name);
     sh.set_hash_table_from_feature_table();
     sh.output_hash_table();
   }
   
   if(search_flag){
     cout << "Running search mode." << endl;
+    sh.set_data_from_file(input_feature_name);
     sh.set_hash_table_from_file(input_hash_name);
     sh.set_query_to_hash_table(query);
     sh.hash_table_bit_shuffle();
