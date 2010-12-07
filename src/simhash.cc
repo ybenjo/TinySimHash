@@ -46,6 +46,7 @@ void SimHash::set_one_data(const string& str){
 }
 
 void SimHash::set_data_from_file(char* input_file_name){
+  cout << "Set feature from file." << endl;
   ifstream ifs;
   string tmp;
   vector<string> ret_str;
@@ -266,11 +267,15 @@ double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
   }
 }
 
-
-void SimHash::calc_b_nearest_cosine_distance(unint b){
+void SimHash::unique_near_ids(){
   //near_ids のuniqを取っておく
+  //calc_b_nearest_cosine_distance 内部で行っていたが、データ読み込みタイミングで
+  //unique されている必要があるので別関数にする
   sort(near_ids.begin(), near_ids.end());
   near_ids.erase(unique(near_ids.begin(), near_ids.end()), near_ids.end());
+}
+
+void SimHash::calc_b_nearest_cosine_distance(unint b){
 
   for(vector<unint>::iterator id = near_ids.begin(); id != near_ids.end(); ++id){
     near_cosines.push_back(make_pair(*id, calculate_cosine_distance(q_id, *id)));
@@ -293,4 +298,184 @@ void SimHash::save_near_cosines_to_file(int limit){
     }
   }
   ofs.close();
+}
+
+//tokyotyrant関連の関数
+void SimHash::save_feature_to_tt(char* feature_server_address){
+  cout << "Saving feature to tt " << feature_server_address << endl;
+  TCRDB *rdb;
+  int ecode;
+  
+  rdb = tcrdbnew();
+  //コネクションを開きつつエラーチェック
+  if(!tcrdbopen2(rdb, feature_server_address)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+
+  //クエリごとにvector<f_id, value>の形式でデータを持っているのでそれを
+  //クエリ string(f_id:value f_id:value)の形式に加工する
+  for(unordered_map<unint, vector<pair<unint, double> > >::iterator x = feature_table.begin(); x != feature_table.end(); ++x){
+    ostringstream d_id;
+    d_id << x->first;
+    ostringstream oss;
+    for(vector<pair<unint, double> >::iterator y = (x->second).begin(); y != (x->second).end(); ++y){
+      if(y != (x->second).begin()){oss << " ";}
+      oss << (*y).first << ":" << (*y).second;
+    }
+
+    //保存しつつエラーチェック
+    if( !tcrdbput2(rdb, d_id.str().c_str(), oss.str().c_str()) ){
+      ecode = tcrdbecode(rdb);
+      fprintf(stderr, "put error: %s\n", tcrdberrmsg(ecode));
+      exit(1);
+    }
+    
+  }
+
+  //コネクションを閉じつつエラーチェック
+  if(!tcrdbclose(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "close error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+  
+  //オブジェクト削除
+  tcrdbdel(rdb);
+}
+
+void SimHash::save_hash_table_to_tt(char* hash_server_address){
+  cout << "Saving hash table to tt " << hash_server_address << endl;
+  TCRDB *rdb;
+  int ecode;
+  
+  rdb = tcrdbnew();
+  //コネクションを開きつつエラーチェック
+  if(!tcrdbopen2(rdb, hash_server_address)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+
+  for(vector<pair<unint, unint> >::iterator i = hash_table.begin(); i != hash_table.end(); ++i){
+    ostringstream d_id, hash_value;
+    d_id << (*i).first;
+    hash_value << (*i).second;
+    //保存しつつエラーチェック
+    if( !tcrdbput2(rdb, d_id.str().c_str(), hash_value.str().c_str()) ){
+      ecode = tcrdbecode(rdb);
+      fprintf(stderr, "put error: %s\n", tcrdberrmsg(ecode));
+      exit(1);
+    }
+  }
+
+  //コネクションを閉じつつエラーチェック
+  if(!tcrdbclose(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "close error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+  
+  //オブジェクト削除
+  tcrdbdel(rdb);
+}
+
+
+void SimHash::get_hash_table_from_tt(char* hash_server_address){
+  cout << "Getting hash table from tt " << hash_server_address << endl;
+  TCRDB *rdb;
+  int ecode;
+  
+  rdb = tcrdbnew();
+  
+  //コネクションを開きつつエラーチェック
+  if(!tcrdbopen2(rdb, hash_server_address)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+
+  //イテレータを初期化しつつエラーチェック
+  if(!tcrdbiterinit(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+
+  char* key = NULL;
+  //イテレータがNULLを返すまでイテレータを進め続けてデータを取得する
+  for(;;){
+    key = tcrdbiternext2(rdb);
+    if(key == NULL){
+      break;
+    }
+    char* value = tcrdbget2(rdb, key);
+    unint d_id = (unint)atoi(key), hash_value = (unint)atoi(value);
+    hash_table.push_back(make_pair(d_id, hash_value));
+    free(value);
+  }
+
+  //コネクションを閉じつつエラーチェック
+  if(!tcrdbclose(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "close error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+  
+  //オブジェクト削除
+  tcrdbdel(rdb);
+}
+
+
+void SimHash::get_feature_from_tt(char* feature_server_address){
+  //この関数に渡される時点で near_ids はuniqueされている
+  cout << "Getting feature from tt " << feature_server_address << endl;
+  TCRDB *rdb;
+  int ecode;
+  
+  rdb = tcrdbnew();
+  
+  //コネクションを開きつつエラーチェック
+  if(!tcrdbopen2(rdb, feature_server_address)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+
+  for(vector<unint>::iterator x = near_ids.begin(); x != near_ids.end(); ++x){
+    ostringstream d_id_key;
+    d_id_key << *x;
+    char* value = tcrdbget2(rdb, d_id_key.str().c_str());
+    string features = value;
+
+    unint d_id = *x;
+    vector<string> d = split_string(features, " ");
+    for(vector<string>::iterator i = d.begin() + 1; i != d.end(); ++i){
+      vector<string> param = split_string(*i, ":");
+      
+      //debug mode
+      if(param[0] == *i){
+	if(debug_flag){
+	  cout << "Skip this line. " << features << endl;;
+	  cout << "Invalid format : " << param[0] << endl;
+	}
+	return;
+      }
+      unint f_id = atoi( param[0].c_str() );
+      feature_table[d_id].push_back( make_pair(f_id, atof(param[1].c_str())) );
+    }
+    
+    free(value);
+  }
+
+  //コネクションを閉じつつエラーチェック
+  if(!tcrdbclose(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "close error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+  
+  //オブジェクト削除
+  tcrdbdel(rdb);
 }

@@ -85,16 +85,6 @@ public:
   //getter
   unint get_random(unint limit);
 
-  //TokyoTyrant
-  //setter
-  void save_feature_to_tt(char* feature_server_name);
-  void save_hash_table_to_tt(char* hash_server_name);
-  
-  //getter
-  void get_feature_from_tt(char* feature_server_name);
-  void get_hash_table_from_tt(char* hash_server_name);
-  
-
   //output
   void save_hash_table_to_file();
   void save_near_cosines_to_file(int limit);
@@ -104,9 +94,20 @@ public:
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
   void hash_table_bit_shuffle();
   void hash_table_sort();
+  void unique_near_ids();
   void search_b_nearest_data(unint b);
   double calculate_cosine_distance(unint d_id_1, unint d_id_2);
   void calc_b_nearest_cosine_distance(unint b);
+  
+  //TokyoTyrant
+  //setter
+  void save_feature_to_tt(char* feature_server_address);
+  void save_hash_table_to_tt(char* hash_server_address);
+
+  
+  //getter
+  void get_feature_from_tt(char* feature_server_address);
+  void get_hash_table_from_tt(char* hash_server_address);
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;

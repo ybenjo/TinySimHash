@@ -8,10 +8,12 @@ int main(int argc, char **argv){
 
   bool debug_flag = false, make_hash_flag = false, search_flag = false;
   
-  char *input_feature_name = NULL, *input_hash_name = NULL,
-    *query = NULL, *feature_server_address = NULL, *hash_server_address = NULL;
+  char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL,
+    *feature_server_address = NULL, *hash_server_address = NULL;
   
   int result = 0, option_index = 0, iteration = 1, limit = 10;
+    
+  
   unint near_b = 10;
 
   struct option lngopt[] = {
@@ -19,10 +21,10 @@ int main(int argc, char **argv){
     {"feature", 1, NULL, 0},
     {"query", 1, NULL, 0},
     {"make", 0, NULL, 0},
-    {"fserver", 0, NULL, 0},
-    {"hserver", 0, NULL, 0},
-    {"iteration", 0, NULL, 0},
-    {"limit", 0, NULL, 0},
+    {"fserver", 1, NULL, 0},
+    {"hserver", 1, NULL, 0},
+    {"iteration", 1, NULL, 0},
+    {"limit", 1, NULL, 0},
     {0, 0, 0, 0}
   };
 
@@ -54,24 +56,18 @@ int main(int argc, char **argv){
     optarg = NULL; 
   }
 
-  //特徴ファイル不在
-  if(input_feature_name == NULL){
-    cout << "Please specify feature filename." << endl;
-    cout << "  ./simhash -f [path] or --feature [path]" << endl;
-    exit(1);
-  }
-
   //検索モードにおける例外
-
   if(!search_flag && query != NULL){
     search_flag = true;
   }
 
   if(search_flag){
-    if(input_hash_name == NULL){
+    if(input_hash_name == NULL && hash_server_address == NULL){
       if(!make_hash_flag){
-	cout << "Please specify hash table filename." << endl;
-	cout << "  ./simhash --hash [path] or -h [path]" << endl;
+	cout << "Please specify hash table filename or hash table server's address. \n"
+	     << "  ./simhash --hash [path] or -h [path]\n"
+	     << "or\n"
+	     << "  ./simhash --hserver [path] (ex. --hserver localhost:1978)" << endl;
 	exit(1);
       }else{
 	cout << "Please make hash table." << endl;
@@ -85,23 +81,47 @@ int main(int argc, char **argv){
     }
   }
 
+  //特徴ファイル不在
+  if(search_flag && input_feature_name == NULL && feature_server_address == NULL){
+    cout << "Please specify feature filename or feature server's address.\n"
+	 << "  ./simhash -f [path] or --feature [path]\n"
+	 << "or"
+	 << " ./simhash --fserver [path] (ex. --fserver localhost:1978)" << endl;
+    exit(1);
+  }else if(!search_flag && input_feature_name == NULL){
+    cout << "Please specify feature filename or feature server's address.\n"
+	 << "  ./simhash -f [path] or --feature [path]" << endl;
+  }
+  
 
 
   SimHash sh;
   sh.set_debug_flag(debug_flag);
-
   
   if(make_hash_flag){
     cout << "Running make hash mode." << endl;
     sh.set_data_from_file(input_feature_name);
     sh.set_hash_table_from_feature_table();
-    sh.save_hash_table_to_file();
+
+    if(feature_server_address != NULL){
+      sh.save_feature_to_tt(feature_server_address);
+    }
+    
+    if(hash_server_address != NULL){
+      sh.save_hash_table_to_tt(hash_server_address);
+    }else{
+      sh.save_hash_table_to_file();
+    }
   }
   
   if(search_flag){
     cout << "Running search mode." << endl;
-    sh.set_data_from_file(input_feature_name);
+    
+    if(hash_server_address != NULL){
+      sh.get_hash_table_from_tt(hash_server_address);
+    }else{
     sh.set_hash_table_from_file(input_hash_name);
+    }
     sh.set_query_to_hash_table(query);
     
     for(int i = 0; i < iteration; ++i){
@@ -110,6 +130,14 @@ int main(int argc, char **argv){
       sh.search_b_nearest_data(near_b);
     }
 
+    sh.unique_near_ids();
+    
+    if(feature_server_address != NULL){
+      sh.get_feature_from_tt(feature_server_address);
+    }else{
+      sh.set_data_from_file(input_feature_name);
+    }
+    
     sh.calc_b_nearest_cosine_distance(near_b);
     sh.save_near_cosines_to_file(limit);
   }
