@@ -11,6 +11,10 @@ simhash。データを32bitのハッシュ値で表現して近傍探索しま�
 
 gcc 4.2.1、tr1/unordered\_mapに依存  
 テストはgoogletestを使用
+また、データ収納についてはTokyo Tyrant 1.1.41を使用
+
+## 注意
+ソースからTokyo Tyrantを導入した場合、Makefileの書き換えが必要
 
 ## 特徴ファイル
 
@@ -30,7 +34,9 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 * --make:ハッシュテーブルファイル生成モード  
 * -b:検索時において前後b個のデータと比較。デフォルトは10。  
 * -l, --limit:検索結果出力時の件数。デフォルトは10。
-* -i, --iteration:検索時にハッシュのビットシャッフル & ソートを繰り返す回数。デフォルトでは繰り返しなし(=1)。
+* -i, --iteration:検索時にハッシュのビットシャッフル & ソートを繰り返す回数。デフォルトでは繰り返しなし(=1)。  
+* --fserver [string]:特徴をtokyotyrantへ格納。検索時に指定することにより、近傍の特徴のみをここから取得するので速度が著しく向上する。
+* --hserver [string]:生成したハッシュテーブルをtokyotyrantへ格納する。検索時に指定することにより、ファイルからではなくこのデータベースから全件読み込む。
 
 ## 使い方
 
@@ -44,6 +50,18 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 	data_id,cosine_similarity
 	data_id,cosine_similarity
 	data_id,cosine_similarity
+
+tokyotyrantを用いる場合次のようにする。
+まずTokyoTyrantのサーバを起動させる。
+その際、サンプルのttservctlを2つコピーし、内部のpidfile、dbnameを変更しておく。
+また、portをそれぞれユニークなものに書き換える。ここでは例として1つをarticle\_bowとしportを1001、もう一つをarticle\_hashとしportを1002とする。
+	sudo /path/to/script/article_bow start
+	sudo /path/to/script/article_hash start
+次にハッシュテーブルを格納する。この時--fserverを指定するとファイル書き出しを行わなくなる。  
+	./simhash --feature /path/to/feature.txt --fserver localhost:1001 --hserver localhost:1002 --make
+その後検索を行う。この時に--fserver及び--hserverを指定する.
+	./simhash --fserver localhost:1001 --hserver localhost:1002 --query /path/to/query.txt -b [num] -t [num] -l [num]
+	
 
 # ToDo
 
