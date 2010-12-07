@@ -329,6 +329,7 @@ void SimHash::save_feature_to_tt(char* feature_server_address){
     if( !tcrdbput2(rdb, d_id.str().c_str(), oss.str().c_str()) ){
       ecode = tcrdbecode(rdb);
       fprintf(stderr, "put error: %s\n", tcrdberrmsg(ecode));
+      tcrdbclose(rdb);
       exit(1);
     }
     
@@ -355,6 +356,7 @@ void SimHash::save_hash_table_to_tt(char* hash_server_address){
   if(!tcrdbopen2(rdb, hash_server_address)){
     ecode = tcrdbecode(rdb);
     fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    tcrdbclose(rdb);
     exit(1);
   }
 
@@ -366,6 +368,7 @@ void SimHash::save_hash_table_to_tt(char* hash_server_address){
     if( !tcrdbput2(rdb, d_id.str().c_str(), hash_value.str().c_str()) ){
       ecode = tcrdbecode(rdb);
       fprintf(stderr, "put error: %s\n", tcrdberrmsg(ecode));
+      tcrdbclose(rdb);
       exit(1);
     }
   }
@@ -400,6 +403,7 @@ void SimHash::get_hash_table_from_tt(char* hash_server_address){
   if(!tcrdbiterinit(rdb)){
     ecode = tcrdbecode(rdb);
     fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    tcrdbclose(rdb);
     exit(1);
   }
 
