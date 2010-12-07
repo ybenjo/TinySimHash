@@ -85,9 +85,19 @@ public:
   //getter
   unint get_random(unint limit);
 
+  //TokyoTyrant
+  //setter
+  void save_feature_to_tt(char* feature_server_name);
+  void save_hash_table_to_tt(char* hash_server_name);
+  
+  //getter
+  void get_feature_from_tt(char* feature_server_name);
+  void get_hash_table_from_tt(char* hash_server_name);
+  
+
   //output
-  void output_hash_table();
-  void output_near_cosines(int limit);
+  void save_hash_table_to_file();
+  void save_near_cosines_to_file(int limit);
   
   //calculate
   unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);

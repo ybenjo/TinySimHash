@@ -95,7 +95,7 @@ int main(int argc, char **argv){
     cout << "Running make hash mode." << endl;
     sh.set_data_from_file(input_feature_name);
     sh.set_hash_table_from_feature_table();
-    sh.output_hash_table();
+    sh.save_hash_table_to_file();
   }
   
   if(search_flag){
@@ -111,6 +111,6 @@ int main(int argc, char **argv){
     }
 
     sh.calc_b_nearest_cosine_distance(near_b);
-    sh.output_near_cosines(limit);
+    sh.save_near_cosines_to_file(limit);
   }
 }

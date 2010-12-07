@@ -86,7 +86,7 @@ void SimHash::initialize(){
   q_id = PRIME;
 }
 
-void SimHash::output_hash_table(){
+void SimHash::save_hash_table_to_file(){
   ostringstream oss;
   vector<string> ret = split_string(input_file_name, ".");
   if(ret.size() > 1){
@@ -279,7 +279,7 @@ void SimHash::calc_b_nearest_cosine_distance(unint b){
   sort(near_cosines.begin(), near_cosines.end(), pairlessdouble());
 }
 
-void SimHash::output_near_cosines(int limit){
+void SimHash::save_near_cosines_to_file(int limit){
   ostringstream oss;
   oss << input_query_name << ".out";
   ofstream ofs;
