@@ -17,6 +17,12 @@
 #include <unistd.h>
 #include <getopt.h>
 
+//tokyotyrant
+#include <tcrdb.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 //ハッシュ値は 32ビット
 typedef uint32_t unint;
 //ついでに素数の最大値を固定しておく
@@ -65,14 +71,14 @@ public:
 
   //util
   void initialize();
-  std::vector<std::string> split_string(std::string s, std::string c);
+  std::vector<std::string> split_string(const std::string& s, const std::string& c);
 
   //setter
   void set_debug_flag(bool flag){debug_flag = flag;};
-  void set_one_data(std::string str);
+  void set_one_data(const std::string& str);
   void set_data_from_file(char* input_file_name);
   void set_hash_table_from_feature_table();
-  void set_hash_table_from_line(std::string str);
+  void set_hash_table_from_line(const std::string& str);
   void set_hash_table_from_file(char* input_file_name);
   unint set_query_to_hash_table(char* input_query_name);
 
@@ -81,14 +87,14 @@ public:
 
   //output
   void output_hash_table();
-  void output_near_cosines();
+  void output_near_cosines(int limit);
   
   //calculate
   unint convert_data_to_hash(const std::vector<std::pair<unint, double> >& data);
   unint bit_shuffle(unint v, unint a, unint b, unint p = 0);
   void hash_table_bit_shuffle();
   void hash_table_sort();
-  std::vector<unint> search_b_nearest_data(unint b);
+  void search_b_nearest_data(unint b);
   double calculate_cosine_distance(unint d_id_1, unint d_id_2);
   void calc_b_nearest_cosine_distance(unint b);
   
@@ -96,6 +102,7 @@ private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
   std::vector<std::pair<unint, unint> > hash_table;
   std::tr1::unordered_map<unint, double> query_feature;
+  std::vector<unint> near_ids;
   std::vector<std::pair<unint, double> > near_cosines;
   unint query_hash;
   bool debug_flag;

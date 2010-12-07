@@ -4,7 +4,7 @@ using namespace std;
 using namespace std::tr1;
 
 //デリミタcが存在しない場合、sそのものを返す
-vector<string> SimHash::split_string(string s, string c){
+vector<string> SimHash::split_string(const string& s, const string& c){
   vector<string> ret;
   for(int i = 0, n = 0; i <= s.length(); i = n + 1){
     n = s.find_first_of(c, i);
@@ -15,7 +15,7 @@ vector<string> SimHash::split_string(string s, string c){
   return ret;
 }
 
-void SimHash::set_one_data(string str){
+void SimHash::set_one_data(const string& str){
   //str => d_id \s param_id : param_score
   vector<string> d = split_string(str, " ");
   
@@ -57,7 +57,7 @@ void SimHash::set_data_from_file(char* input_file_name){
   ifs.close();
 }
 
-void SimHash::set_hash_table_from_line(string str){
+void SimHash::set_hash_table_from_line(const string& str){
   vector<string> words;
   stringstream ss(str);
   string elem;
@@ -212,7 +212,10 @@ void SimHash::hash_table_bit_shuffle(){
   for(i = hash_table.begin(); i != hash_table.end(); ++i){
     (*i).second = bit_shuffle((*i).second, a, b);
     //クエリのハッシュを更新しておく
-    if((*i).first == PRIME){query_hash = (*i).second;}
+    if((*i).first == PRIME){
+      query_hash = (*i).second;
+    }
+
   }
 }
 
@@ -221,27 +224,24 @@ void SimHash::hash_table_sort(){
 }
 
 //クエリからプラスマイナスb個(最大2b個)取得してそのd_idを返す
-vector<unint> SimHash::search_b_nearest_data(unint b){
+void SimHash::search_b_nearest_data(unint b){
   vector<pair<unint, unint> >::iterator query;
-  vector<unint> nears;
   query = find(hash_table.begin(), hash_table.end(), make_pair(q_id, query_hash));
 
   if(query != hash_table.end()){
     //クエリから後ろに最大b個
     for(int i = 1; (i <= b) && (query + i != hash_table.end()) ; ++i){
-      nears.push_back((*(query+i)).first);
+      near_ids.push_back((*(query+i)).first);
     }
 
     //クエリから前に最大b個
     for(int i = 1; (i <= b); ++i){
-      nears.push_back((*(query-i)).first);
+      near_ids.push_back((*(query-i)).first);
       if(query-i == hash_table.begin()){
 	break;
       }
     }
-    
   }
-  return nears;
 }
 
 double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
@@ -268,7 +268,9 @@ double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
 
 
 void SimHash::calc_b_nearest_cosine_distance(unint b){
-  vector<unint> near_ids = search_b_nearest_data(b);
+  //near_ids のuniqを取っておく
+  sort(near_ids.begin(), near_ids.end());
+  near_ids.erase(unique(near_ids.begin(), near_ids.end()), near_ids.end());
 
   for(vector<unint>::iterator id = near_ids.begin(); id != near_ids.end(); ++id){
     near_cosines.push_back(make_pair(*id, calculate_cosine_distance(q_id, *id)));
@@ -277,13 +279,18 @@ void SimHash::calc_b_nearest_cosine_distance(unint b){
   sort(near_cosines.begin(), near_cosines.end(), pairlessdouble());
 }
 
-void SimHash::output_near_cosines(){
+void SimHash::output_near_cosines(int limit){
   ostringstream oss;
   oss << input_query_name << ".out";
   ofstream ofs;
   ofs.open((oss.str()).c_str());
+  int count = 1;
   for(vector<pair<unint, double> >::iterator i = near_cosines.begin(); i != near_cosines.end(); ++i){
     ofs << (*i).first << "," << (*i).second << endl;
+    count++;
+    if(count >= limit){
+      break;
+    }
   }
   ofs.close();
 }

@@ -7,8 +7,11 @@ int main(int argc, char **argv){
   //d_flag : debug
 
   bool debug_flag = false, make_hash_flag = false, search_flag = false;
-  char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL;
-  int result = 0, option_index = 0;
+  
+  char *input_feature_name = NULL, *input_hash_name = NULL,
+    *query = NULL, *feature_server_address = NULL, *hash_server_address = NULL;
+  
+  int result = 0, option_index = 0, iteration = 1, limit = 10;
   unint near_b = 10;
 
   struct option lngopt[] = {
@@ -16,12 +19,15 @@ int main(int argc, char **argv){
     {"feature", 1, NULL, 0},
     {"query", 1, NULL, 0},
     {"make", 0, NULL, 0},
-    {"search", 0, NULL, 0},
+    {"fserver", 0, NULL, 0},
+    {"hserver", 0, NULL, 0},
+    {"iteration", 0, NULL, 0},
+    {"limit", 0, NULL, 0},
     {0, 0, 0, 0}
   };
 
   while(1){
-    result = getopt_long(argc, argv, "f:h:q:b:ds", lngopt, &option_index);
+    result = getopt_long(argc, argv, "f:h:q:b:i:ds", lngopt, &option_index);
     if(result == -1) break;
     if(result == 0){
       switch(option_index){
@@ -29,7 +35,10 @@ int main(int argc, char **argv){
       case 1 : input_feature_name = optarg; break;
       case 2 : query = optarg; break;	
       case 3 : make_hash_flag = true; break;
-      case 4 : search_flag = true; break;
+      case 4 : feature_server_address = optarg; break;
+      case 5 : hash_server_address = optarg; break;
+      case 6 : iteration = atoi(optarg); break;
+      case 7 : limit = atoi(optarg); break;
       }
     }else{
       switch(result){
@@ -37,8 +46,9 @@ int main(int argc, char **argv){
       case 'h' : input_hash_name = optarg; break;
       case 'q' : query = optarg; break;
       case 'd' : debug_flag = true; break;
-      case 's' : search_flag = true; break;
       case 'b' : near_b = atoi(optarg); break;
+      case 'i' : iteration = atoi(optarg); break;
+      case 'l' : limit = atoi(optarg); break;
       }
     }
     optarg = NULL; 
@@ -93,10 +103,14 @@ int main(int argc, char **argv){
     sh.set_data_from_file(input_feature_name);
     sh.set_hash_table_from_file(input_hash_name);
     sh.set_query_to_hash_table(query);
-    sh.hash_table_bit_shuffle();
-    sh.hash_table_sort();
-    sh.search_b_nearest_data(near_b);
+    
+    for(int i = 0; i < iteration; ++i){
+      sh.hash_table_bit_shuffle();
+      sh.hash_table_sort();
+      sh.search_b_nearest_data(near_b);
+    }
+
     sh.calc_b_nearest_cosine_distance(near_b);
-    sh.output_near_cosines();
+    sh.output_near_cosines(limit);
   }
 }

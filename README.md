@@ -26,9 +26,11 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 
 * -f, --feature:入力する特徴ファイル  
 * -h, --hash:既に生成したハッシュテーブルファイル   
-* -q, --query:クエリ
+* -q, --query:クエリファイル
 * --make:ハッシュテーブルファイル生成モード  
-* -b:検索モードにおいて前後b個のデータと比較。デフォルトは10。  
+* -b:検索時において前後b個のデータと比較。デフォルトは10。  
+* -l, --limit:検索結果出力時の件数。デフォルトは10。
+* -i, --iteration:検索時にハッシュのビットシャッフル & ソートを繰り返す回数。デフォルトでは繰り返しなし(=1)。
 
 ## 使い方
 
@@ -37,7 +39,7 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 ハッシュテーブルファイルを生成。ハッシュテーブルファイルは/path/to/feature.hashに生成される。
 	./simhash --feature /path/to/feature.txt --make
 次に検索
-	./simhash --feature /path/to/feature.txt --hash /path/to/feature.hash --query /path/to/query.txt -b [num]
+	./simhash --feature /path/to/feature.txt --hash /path/to/feature.hash --query /path/to/query.txt -b [num] -t [num] -l [num]
 検索結果は/path/to/query.txt.outに出力される。形式は以下の通りで降順に出力される。
 	data_id,cosine_similarity
 	data_id,cosine_similarity
