@@ -52,21 +52,24 @@ LibSVMと同じ形式。1行1データ。特徴量ごとにスペースで区切
 	data_id,cosine_similarity
 	data_id,cosine_similarity
 
-tokyotyrantを用いる場合次のようにする。
-まずTokyoTyrantのサーバを起動させる。
-その際、サンプルのttservctlを2つコピーし、内部のpidfile、dbnameを変更しておく。
-また、portをそれぞれユニークなものに書き換える。ここでは例として1つをarticle\_bowとしportを1001、もう一つをarticle\_hashとしportを1002とする。
+tokyotyrantを用いる場合次のようにする。まずTokyoTyrantのサーバを起動させる。  
+その際、サンプルのttservctlを2つコピーし、内部のpidfile、dbnameを変更しておく。  
+また、portをそれぞれユニークなものに書き換える。ここでは例として1つをarticle\_bowとしportを1001、もう一つをarticle\_hashとしportを1002とする。  
 	sudo /path/to/script/article_bow start
 	sudo /path/to/script/article_hash start
 次にハッシュテーブルを格納する。この時--fserverを指定するとファイル書き出しを行わなくなる。  
 	./simhash --feature /path/to/feature.txt --fserver localhost:1001 --hserver localhost:1002 --make
 その後検索を行う。この時に--fserver及び--hserverを指定する.
 	./simhash --fserver localhost:1001 --hserver localhost:1002 --query /path/to/query.txt -b [num] -t [num] -l [num]
+--fastを有効にする場合、--fastを付けずに作成したハッシュテーブルデータベースを一度削除し再構築する必要がある。
+	./simhash --fserver localhost:1001 --hserver localhost:1002 --make --fast
+検索の際、-b, -tの引数は無視される。
+	./simhash --fserver localhost:1001 --hserver localhost:1002 --query /path/to/query.txt -l [num] --fast
 	
 
 # ToDo
 
-* 元論文に書かれているハッシュの圧縮。及びRead/Writeの高速化
+* 元論文に書かれているハッシュの圧縮
 * テストの充実
 * 引数チェック
 * ハッシュテーブルファイルを生成せずに検索のみを行うモード
