@@ -108,6 +108,12 @@ public:
   //getter
   void get_feature_from_tt(char* feature_server_address);
   void get_hash_table_from_tt(char* hash_server_address);
+
+  //hashtableの分割
+  unint split_number_bit(unint n, unint start, unint end);
+  unint split_number_table(unint n, unint table_num);
+  void save_split_hash_table_to_tt(char* hash_server_address);
+  void get_split_hash_table_to_tt(char* hash_server_address);
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;

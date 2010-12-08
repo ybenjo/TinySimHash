@@ -6,7 +6,8 @@ int main(int argc, char **argv){
   //フラグ類
   //d_flag : debug
 
-  bool debug_flag = false, make_hash_flag = false, search_flag = false;
+  bool debug_flag = false, make_hash_flag = false,
+    search_flag = false, fast_flag = false;
   
   char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL,
     *feature_server_address = NULL, *hash_server_address = NULL;
@@ -25,6 +26,7 @@ int main(int argc, char **argv){
     {"hserver", 1, NULL, 0},
     {"iteration", 1, NULL, 0},
     {"limit", 1, NULL, 0},
+    {"fast", 0, NULL, 0},
     {0, 0, 0, 0}
   };
 
@@ -41,6 +43,7 @@ int main(int argc, char **argv){
       case 5 : hash_server_address = optarg; break;
       case 6 : iteration = atoi(optarg); break;
       case 7 : limit = atoi(optarg); break;
+      case 8 : fast_flag = true; break;
       }
     }else{
       switch(result){
@@ -106,11 +109,17 @@ int main(int argc, char **argv){
     if(feature_server_address != NULL){
       sh.save_feature_to_tt(feature_server_address);
     }
-    
-    if(hash_server_address != NULL){
-      sh.save_hash_table_to_tt(hash_server_address);
+
+    if(fast_flag){
+      //fast
+      sh.save_split_hash_table_to_tt(hash_server_address);
     }else{
-      sh.save_hash_table_to_file();
+      //normal
+      if(hash_server_address != NULL){
+	sh.save_hash_table_to_tt(hash_server_address);
+      }else{
+	sh.save_hash_table_to_file();
+      }
     }
   }
   
@@ -123,14 +132,23 @@ int main(int argc, char **argv){
     sh.set_hash_table_from_file(input_hash_name);
     }
     sh.set_query_to_hash_table(query);
-    
-    for(int i = 0; i < iteration; ++i){
-      sh.hash_table_bit_shuffle();
-      sh.hash_table_sort();
-      sh.search_b_nearest_data(near_b);
-    }
 
-    sh.unique_near_ids();
+    if(fast_flag){
+      //この場合、ハッシュを4分割し、そのテーブルごとに一致するハッシュを取得する。
+      sh.get_split_hash_table_to_tt(hash_server_address);
+      sh.unique_near_ids();
+    }else{
+      //こちらは全件hashを読み込む
+      //normal simhash (random shuffle and sort)
+    
+      for(int i = 0; i < iteration; ++i){
+	sh.hash_table_bit_shuffle();
+	sh.hash_table_sort();
+	sh.search_b_nearest_data(near_b);
+      }
+      
+      sh.unique_near_ids();
+    }
     
     if(feature_server_address != NULL){
       sh.get_feature_from_tt(feature_server_address);

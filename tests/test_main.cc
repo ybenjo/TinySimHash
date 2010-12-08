@@ -62,6 +62,25 @@ TEST_F(SimHashModule, set_query_to_hash_table){
   EXPECT_EQ(3, sh.set_query_to_hash_table("./tests/q_test.txt"));
 }
 
+TEST_F(SimHashModule, split_number_bit_case1){
+  EXPECT_EQ(0, sh.split_number_bit(0, 0, 7));
+}
+
+TEST_F(SimHashModule, split_number_bit_case2){
+  EXPECT_EQ(1, sh.split_number_bit(256, 0, 7));
+}
+
+TEST_F(SimHashModule, split_number_table_1){
+  //00001xx + 11 = 0000111
+  EXPECT_EQ(7, sh.split_number_table(256, 3));
+}
+
+TEST_F(SimHashModule, split_number_table_2){
+  //111111xx + 10 = 111111110
+  unint unint_max = ~0;
+  EXPECT_EQ(67108862, sh.split_number_table(unint_max, 2));
+}
+
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

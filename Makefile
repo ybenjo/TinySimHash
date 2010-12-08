@@ -9,7 +9,7 @@ TT=-I/opt/local/include -L/opt/local/lib -ltokyotyrant -ltokyocabinet -lz -lbz2 
 # -lnsl -lrt
 
 test: simhash.o
-	${CXX} ${CXX_FLAGS} -lgtest -lpthread ./tests/test_main.cc simhash.o -o test
+	${CXX} ${CXX_FLAGS} ${TT} -lgtest -lpthread ./tests/test_main.cc simhash.o -o test
 
 simhash: simhash.o
 	${CXX} ${CXX_FLAGS} ${TT} ./src/main.cc simhash.o -o simhash

@@ -483,3 +483,174 @@ void SimHash::get_feature_from_tt(char* feature_server_address){
   //オブジェクト削除
   tcrdbdel(rdb);
 }
+
+
+
+//hashtableの分割
+//ハッシュテーブルを分割する。
+//32bitをまずは2分割(16bit)する。その後、残りの16bitも2分割する。
+//それらの組み合わせを1テーブルとみなす。つまり16+8=24bitのテーブルが4つできる。
+
+//テーブル番号は次のようになる。ビット数は右から数えて0から31であるとする。
+//テーブル0 : 24から31を用いない
+//テーブル1 : 16から23を用いない
+//テーブル2 : 8から15を用いない
+//テーブル3 : 0bitから7bitを用いない
+
+//データベースにはテーブルごとのハッシュ値+テーブル番号を格納する
+//例テーブル0においてハッシュ値が0だった場合
+//000000(6bit) 0......0(24bit) 00(2bit) = 0
+//例テーブル1においてハッシュ値が1111....1だった場合
+//000000(6bit) 111....1(24bit) 01(2bit) = 
+
+unint SimHash::split_number_bit(unint n, unint start, unint end){
+  unint table_hash = 0;
+  for(unint i = 0; i < 32; ++i){
+    if(i < start || i > end){
+      //まず右シフト
+      table_hash = table_hash >> 1;
+      
+      if(n & 1){
+	//nの最下位ビットが立っていた場合、
+	//23ビットを立てる = 2^23(8388608)を足す
+	table_hash += 8388608;
+      }
+    }
+    n = n >> 1;
+  }
+  return table_hash;
+}
+
+unint SimHash::split_number_table(unint n, unint table_num){
+  unint table_hash = 0;
+  switch(table_num){
+
+  case 0 : {
+    //テーブル0 : 24から31を用いない
+    table_hash = split_number_bit(n, 24, 31);
+    break;
+  }
+  case 1 : {
+    //テーブル1 : 16から23を用いない
+    table_hash = split_number_bit(n, 16, 23);
+    break;
+  }
+  case 2 : {
+    //テーブル2 : 8から15を用いない
+    table_hash = split_number_bit(n, 8, 15);
+    break;
+  }
+  case 3 : {
+    //テーブル3 : 0bitから7bitを用いない
+    table_hash = split_number_bit(n, 0, 7);
+    break;
+  }
+  default : {
+    cout << "illigal table_num! "<< table_num << endl;
+    exit(1);
+  }
+  }
+  
+  table_hash = table_hash << 2;
+  table_hash += table_num;
+  return table_hash;
+}
+
+
+void SimHash::save_split_hash_table_to_tt(char* hash_server_address){
+  cout << "Saving split hash table to tt " << hash_server_address << endl;
+  TCRDB *rdb;
+  int ecode;
+  
+  rdb = tcrdbnew();
+  //コネクションを開きつつエラーチェック
+  if(!tcrdbopen2(rdb, hash_server_address)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    tcrdbclose(rdb);
+    exit(1);
+  }
+
+  //分割テーブルごとにmapを作りvectorで突っ込む。最後に連結してdbに格納
+  for(int table_num = 0; table_num < 4; ++table_num){
+    unordered_map<unint, vector<unint> > tmp_hash;
+    for(vector<pair<unint, unint> >::iterator i = hash_table.begin(); i != hash_table.end(); ++i){
+      unint d_id = (*i).first;
+      unint conv_hash = split_number_table((*i).second, table_num);
+      tmp_hash[conv_hash].push_back(d_id);
+    }
+
+    //保存
+    for(unordered_map<unint, vector<unint> >::iterator x = tmp_hash.begin(); x != tmp_hash.end(); ++x){
+      ostringstream oss, key;
+      key << x->first;
+
+      //ossには同じhashを持つidが大量に入っている感
+      for(vector<unint>::iterator y = x->second.begin(); y != x->second.end(); ++y){
+	if(y != x->second.begin()){
+	  oss << " ";
+	}
+	oss << *y;
+      }
+
+      //格納しつつエラーチェック
+      if( !tcrdbput2(rdb, key.str().c_str(), oss.str().c_str()) ){
+	ecode = tcrdbecode(rdb);
+	fprintf(stderr, "put error: %s\n", tcrdberrmsg(ecode));
+	tcrdbclose(rdb);
+	exit(1);
+      }
+    }
+    
+  }
+  
+  //コネクションを閉じつつエラーチェック
+  if(!tcrdbclose(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "close error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+  
+  //オブジェクト削除
+  tcrdbdel(rdb);
+}
+
+
+void SimHash::get_split_hash_table_to_tt(char* hash_server_address){
+  cout << "Getting split hash from tt " << hash_server_address << endl;
+  TCRDB *rdb;
+  int ecode;
+  
+  rdb = tcrdbnew();
+  
+  //コネクションを開きつつエラーチェック
+  if(!tcrdbopen2(rdb, hash_server_address)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "open error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+
+  //tableごとにq_hashを区切ってクエリとして投げる
+  for(int i = 0; i < 4; ++i){
+    unint split_q_hash = split_number_table(query_hash, i);
+    ostringstream key;
+    key << split_q_hash;
+    char* value = tcrdbget2(rdb, key.str().c_str());
+    string hs = value;
+    vector<string> d = split_string(hs, " ");
+    for(vector<string>::iterator x = d.begin(); x != d.end(); ++x){
+      near_ids.push_back((unint)atoi((*x).c_str()));
+    }
+    free(value);
+  }
+
+  //コネクションを閉じつつエラーチェック
+  if(!tcrdbclose(rdb)){
+    ecode = tcrdbecode(rdb);
+    fprintf(stderr, "close error: %s\n", tcrdberrmsg(ecode));
+    exit(1);
+  }
+  
+  //オブジェクト削除
+  tcrdbdel(rdb);
+}
