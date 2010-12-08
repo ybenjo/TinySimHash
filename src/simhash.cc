@@ -291,7 +291,9 @@ void SimHash::save_near_cosines_to_file(int limit){
   ofs.open((oss.str()).c_str());
   int count = 1;
   for(vector<pair<unint, double> >::iterator i = near_cosines.begin(); i != near_cosines.end(); ++i){
-    ofs << (*i).first << "," << (*i).second << endl;
+    if((*i).second > 0){
+      ofs << (*i).first << "," << (*i).second << endl;
+    }
     count++;
     if(count >= limit){
       break;
