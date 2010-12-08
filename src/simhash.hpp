@@ -114,6 +114,8 @@ public:
   unint split_number_table(unint n, unint table_num);
   void save_split_hash_table_to_tt(char* hash_server_address);
   void get_split_hash_table_to_tt(char* hash_server_address);
+  unint bitcount(unint n);
+  void bit_xor(int k);
   
 private:
   std::tr1::unordered_map<unint, std::vector<std::pair<unint, double> > > feature_table;
@@ -121,6 +123,7 @@ private:
   std::tr1::unordered_map<unint, double> query_feature;
   std::vector<unint> near_ids;
   std::vector<std::pair<unint, double> > near_cosines;
+  std::tr1::unordered_map<unint, unint> limit_hash_map;
   unint query_hash;
   bool debug_flag;
   char* input_file_name;

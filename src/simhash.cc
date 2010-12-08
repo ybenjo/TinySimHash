@@ -457,7 +457,8 @@ void SimHash::get_feature_from_tt(char* feature_server_address){
 
     unint d_id = *x;
     vector<string> d = split_string(features, " ");
-    for(vector<string>::iterator i = d.begin() + 1; i != d.end(); ++i){
+    
+    for(vector<string>::iterator i = d.begin(); i != d.end(); ++i){
       vector<string> param = split_string(*i, ":");
       
       //debug mode
@@ -575,20 +576,22 @@ void SimHash::save_split_hash_table_to_tt(char* hash_server_address){
 
   //分割テーブルごとにmapを作りvectorで突っ込む。最後に連結してdbに格納
   for(int table_num = 0; table_num < 4; ++table_num){
-    unordered_map<unint, vector<unint> > tmp_hash;
+    unordered_map<unint, vector<string> > tmp_hash;
     for(vector<pair<unint, unint> >::iterator i = hash_table.begin(); i != hash_table.end(); ++i){
       unint d_id = (*i).first;
       unint conv_hash = split_number_table((*i).second, table_num);
-      tmp_hash[conv_hash].push_back(d_id);
+      ostringstream oss;
+      oss << d_id << ":" << (*i).second;
+      tmp_hash[conv_hash].push_back(oss.str());
     }
 
     //保存
-    for(unordered_map<unint, vector<unint> >::iterator x = tmp_hash.begin(); x != tmp_hash.end(); ++x){
+    for(unordered_map<unint, vector<string> >::iterator x = tmp_hash.begin(); x != tmp_hash.end(); ++x){
       ostringstream oss, key;
       key << x->first;
 
-      //ossには同じhashを持つidが大量に入っている感
-      for(vector<unint>::iterator y = x->second.begin(); y != x->second.end(); ++y){
+      //ossには同じ分割hashを持つidが大量に入っている感
+      for(vector<string>::iterator y = x->second.begin(); y != x->second.end(); ++y){
 	if(y != x->second.begin()){
 	  oss << " ";
 	}
@@ -617,7 +620,6 @@ void SimHash::save_split_hash_table_to_tt(char* hash_server_address){
   tcrdbdel(rdb);
 }
 
-
 void SimHash::get_split_hash_table_to_tt(char* hash_server_address){
   cout << "Getting split hash from tt " << hash_server_address << endl;
   TCRDB *rdb;
@@ -641,7 +643,11 @@ void SimHash::get_split_hash_table_to_tt(char* hash_server_address){
     string hs = value;
     vector<string> d = split_string(hs, " ");
     for(vector<string>::iterator x = d.begin(); x != d.end(); ++x){
-      near_ids.push_back((unint)atoi((*x).c_str()));
+      vector<string> token = split_string(*x, ":");
+      unint id = (unint)atoi(token[0].c_str());
+      unint hash_value = (unint)atoi(token[1].c_str());
+      near_ids.push_back(id);
+      limit_hash_map[id] = hash_value;
     }
     free(value);
   }
@@ -655,4 +661,25 @@ void SimHash::get_split_hash_table_to_tt(char* hash_server_address){
   
   //オブジェクト削除
   tcrdbdel(rdb);
+}
+
+unint SimHash::bitcount(unint n){
+  unint count = 0;
+  while(n){
+    count++;
+    n = n & (n - 1);
+  }
+  return count;
+}
+
+void SimHash::bit_xor(int k){
+  cout << "bit XOR in k = " << k << endl;
+  vector<unint> near_k_ids;
+  for(vector<unint>::iterator i = near_ids.begin(); i != near_ids.end(); ++i){
+    unint target_hash = limit_hash_map[*i];
+    if(bitcount(target_hash ^ query_hash) <= k){
+      near_k_ids.push_back(*i);
+    }
+  }
+  near_ids = near_k_ids;
 }

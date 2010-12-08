@@ -12,7 +12,7 @@ int main(int argc, char **argv){
   char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL,
     *feature_server_address = NULL, *hash_server_address = NULL;
   
-  int result = 0, option_index = 0, iteration = 1, limit = 10;
+  int result = 0, option_index = 0, iteration = 1, limit = 10, k = 34;
     
   
   unint near_b = 10;
@@ -31,7 +31,7 @@ int main(int argc, char **argv){
   };
 
   while(1){
-    result = getopt_long(argc, argv, "f:h:q:b:i:ds", lngopt, &option_index);
+    result = getopt_long(argc, argv, "f:h:q:b:i:k:ds", lngopt, &option_index);
     if(result == -1) break;
     if(result == 0){
       switch(option_index){
@@ -54,6 +54,7 @@ int main(int argc, char **argv){
       case 'b' : near_b = atoi(optarg); break;
       case 'i' : iteration = atoi(optarg); break;
       case 'l' : limit = atoi(optarg); break;
+      case 'k' : k = atoi(optarg); break;
       }
     }
     optarg = NULL; 
@@ -125,19 +126,22 @@ int main(int argc, char **argv){
   
   if(search_flag){
     cout << "Running search mode." << endl;
-    
-    if(hash_server_address != NULL){
-      sh.get_hash_table_from_tt(hash_server_address);
-    }else{
-    sh.set_hash_table_from_file(input_hash_name);
-    }
     sh.set_query_to_hash_table(query);
 
     if(fast_flag){
       //この場合、ハッシュを4分割し、そのテーブルごとに一致するハッシュを取得する。
       sh.get_split_hash_table_to_tt(hash_server_address);
       sh.unique_near_ids();
+      if(k != 34){
+	sh.bit_xor(k);
+      }
     }else{
+
+      if(hash_server_address != NULL){
+	sh.get_hash_table_from_tt(hash_server_address);
+      }else{
+	sh.set_hash_table_from_file(input_hash_name);
+      }
       //こちらは全件hashを読み込む
       //normal simhash (random shuffle and sort)
     
