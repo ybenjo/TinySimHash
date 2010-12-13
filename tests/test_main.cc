@@ -64,21 +64,23 @@ TEST_F(SimHashModule, set_query_to_hash_table){
 
 TEST_F(SimHashModule, split_number_bit_case1){
   EXPECT_EQ(0, sh.split_number_bit(0, 0, 7));
+  EXPECT_EQ(1, sh.split_number_bit(1, 0, 7));
 }
 
 TEST_F(SimHashModule, split_number_bit_case2){
-  EXPECT_EQ(1, sh.split_number_bit(256, 0, 7));
+  EXPECT_EQ(0, sh.split_number_bit(128, 8, 15));
+  EXPECT_EQ(1, sh.split_number_bit(256, 8, 15));
 }
 
 TEST_F(SimHashModule, split_number_table_1){
   //00001xx + 11 = 0000111
-  EXPECT_EQ(7, sh.split_number_table(256, 3));
+  EXPECT_EQ(7, sh.split_number_table(1, 3));
 }
 
 TEST_F(SimHashModule, split_number_table_2){
-  //111111xx + 10 = 111111110
+  //111111xx + 10 = 1111111(8)10
   unint unint_max = ~0;
-  EXPECT_EQ(67108862, sh.split_number_table(unint_max, 2));
+  EXPECT_EQ(1022, sh.split_number_table(unint_max, 2));
 }
 
 int main(int argc, char **argv){

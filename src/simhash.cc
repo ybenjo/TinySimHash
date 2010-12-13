@@ -491,14 +491,13 @@ void SimHash::get_feature_from_tt(char* feature_server_address){
 
 //hashtableの分割
 //ハッシュテーブルを分割する。
-//32bitをまずは2分割(16bit)する。その後、残りの16bitも2分割する。
-//それらの組み合わせを1テーブルとみなす。つまり16+8=24bitのテーブルが4つできる。
+//8bitずつ使う
 
 //テーブル番号は次のようになる。ビット数は右から数えて0から31であるとする。
-//テーブル0 : 24から31を用いない
-//テーブル1 : 16から23を用いない
-//テーブル2 : 8から15を用いない
-//テーブル3 : 0bitから7bitを用いない
+//テーブル0 : 24から31を用いる
+//テーブル1 : 16から23を用いる
+//テーブル2 : 8から15を用いる
+//テーブル3 : 0bitから7bitを用いる
 
 //データベースにはテーブルごとのハッシュ値+テーブル番号を格納する
 //例テーブル0においてハッシュ値が0だった場合
@@ -509,14 +508,15 @@ void SimHash::get_feature_from_tt(char* feature_server_address){
 unint SimHash::split_number_bit(unint n, unint start, unint end){
   unint table_hash = 0;
   for(unint i = 0; i < 32; ++i){
-    if(i < start || i > end){
+    //[start..end]の範囲を用いる
+    if(i >= start && i <= end){
       //まず右シフト
       table_hash = table_hash >> 1;
       
       if(n & 1){
 	//nの最下位ビットが立っていた場合、
-	//23ビットを立てる = 2^23(8388608)を足す
-	table_hash += 8388608;
+	//8bitを立てる→2^(8-1) = 128
+	table_hash += 128;
       }
     }
     n = n >> 1;
@@ -529,22 +529,26 @@ unint SimHash::split_number_table(unint n, unint table_num){
   switch(table_num){
 
   case 0 : {
-    //テーブル0 : 24から31を用いない
+    //テーブル0 : 24から31を用いる
+    //xxxxxxxx........................
     table_hash = split_number_bit(n, 24, 31);
     break;
   }
   case 1 : {
-    //テーブル1 : 16から23を用いない
+    //テーブル1 : 16から23を用いる
+    //.......xxxxxxxx.................
     table_hash = split_number_bit(n, 16, 23);
     break;
   }
   case 2 : {
-    //テーブル2 : 8から15を用いない
+    //テーブル2 : 8から15を用いる
+    //...............xxxxxxxx.........
     table_hash = split_number_bit(n, 8, 15);
     break;
   }
   case 3 : {
-    //テーブル3 : 0bitから7bitを用いない
+    //テーブル3 : 0bitから7bitを用いる
+    //........................xxxxxxxx
     table_hash = split_number_bit(n, 0, 7);
     break;
   }
@@ -673,7 +677,7 @@ unint SimHash::bitcount(unint n){
 }
 
 void SimHash::bit_xor(int k){
-  cout << "bit XOR in k = " << k << endl;
+  cout << "bit XOR (k = " << k <<")"<< endl;
   vector<unint> near_k_ids;
   for(vector<unint>::iterator i = near_ids.begin(); i != near_ids.end(); ++i){
     unint target_hash = limit_hash_map[*i];
