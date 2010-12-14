@@ -640,6 +640,7 @@ void SimHash::get_split_hash_table_to_tt(char* hash_server_address){
   }
 
   //tableごとにq_hashを区切ってクエリとして投げる
+  //debug
   for(int i = 0; i < 4; ++i){
     unint split_q_hash = split_number_table(query_hash, i);
     ostringstream key;
@@ -678,6 +679,7 @@ unint SimHash::bitcount(unint n){
 }
 
 void SimHash::bit_xor(int k){
+  //debug
   cout << "bit XOR (k = " << k <<")"<< endl;
   vector<unint> near_k_ids;
   for(vector<unint>::iterator i = near_ids.begin(); i != near_ids.end(); ++i){
