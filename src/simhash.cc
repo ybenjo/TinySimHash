@@ -690,3 +690,16 @@ void SimHash::bit_xor(int k){
   }
   near_ids = near_k_ids;
 }
+
+void SimHash::query_normalization(bool normal_flag){
+  if(normal_flag){
+    double sum = 0.0;
+    for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
+      sum += i->second;
+    }
+
+    for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
+      query_feature[i->first] /= sum;
+    }
+  }
+}

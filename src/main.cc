@@ -7,7 +7,7 @@ int main(int argc, char **argv){
   //d_flag : debug
 
   bool debug_flag = false, make_hash_flag = false,
-    search_flag = false, fast_flag = false;
+    search_flag = false, fast_flag = false, normal_flag = false;
   
   char *input_feature_name = NULL, *input_hash_name = NULL, *query = NULL,
     *feature_server_address = NULL, *hash_server_address = NULL;
@@ -27,6 +27,7 @@ int main(int argc, char **argv){
     {"iteration", 1, NULL, 0},
     {"limit", 1, NULL, 0},
     {"fast", 0, NULL, 0},
+    {"normal", 0, NULL, 0},
     {0, 0, 0, 0}
   };
 
@@ -44,6 +45,7 @@ int main(int argc, char **argv){
       case 6 : iteration = atoi(optarg); break;
       case 7 : limit = atoi(optarg); break;
       case 8 : fast_flag = true; break;
+      case 9 : normal_flag = true; break;
       }
     }else{
       switch(result){
@@ -127,6 +129,7 @@ int main(int argc, char **argv){
   if(search_flag){
     cout << "Running search mode." << endl;
     sh.set_query_to_hash_table(query);
+    sh.query_normalization(normal_flag);
 
     if(fast_flag){
       //この場合、ハッシュを4分割し、そのテーブルごとに一致するハッシュを取得する。
