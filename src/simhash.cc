@@ -245,6 +245,8 @@ void SimHash::search_b_nearest_data(unint b){
   }
 }
 
+//正確なコサイン類似度ではなく、
+//d_feature に含まれる要素のみでコサイン類似度を計算している
 double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
   double norm_q = 0.0, norm_d = 0.0, inner = 0.0;
   
@@ -253,7 +255,7 @@ double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
     norm_d += pow((*i).second, 2.0);
     if(query_feature.end() != query_feature.find((*i).first)){
       inner += (*i).second * query_feature[(*i).first];
-      norm_q += (query_feature[(*i).first], 2.0);
+      norm_q += pow(query_feature[(*i).first], 2.0);
     }
   }
 
