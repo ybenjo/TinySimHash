@@ -640,20 +640,22 @@ void SimHash::get_split_hash_table_to_tt(char* hash_server_address){
   }
 
   //tableごとにq_hashを区切ってクエリとして投げる
-  //debug
   for(int i = 0; i < 4; ++i){
     unint split_q_hash = split_number_table(query_hash, i);
     ostringstream key;
     key << split_q_hash;
     char* value = tcrdbget2(rdb, key.str().c_str());
-    string hs = value;
-    vector<string> d = split_string(hs, " ");
-    for(vector<string>::iterator x = d.begin(); x != d.end(); ++x){
-      vector<string> token = split_string(*x, ":");
-      unint id = (unint)atoi(token[0].c_str());
-      unint hash_value = (unint)atoi(token[1].c_str());
-      near_ids.push_back(id);
-      limit_hash_map[id] = hash_value;
+    //null checkしないとhsがNULLで初期化されるためセグフォを起こす
+    if(value != NULL){
+      string hs = value;
+      vector<string> d = split_string(hs, " ");
+      for(vector<string>::iterator x = d.begin(); x != d.end(); ++x){
+	vector<string> token = split_string(*x, ":");
+	unint id = (unint)atoi(token[0].c_str());
+	unint hash_value = (unint)atoi(token[1].c_str());
+	near_ids.push_back(id);
+	limit_hash_map[id] = hash_value;
+      }
     }
     free(value);
   }
