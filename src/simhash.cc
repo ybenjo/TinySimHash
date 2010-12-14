@@ -253,12 +253,13 @@ double SimHash::calculate_cosine_distance(unint q_id, unint d_id){
     norm_d += pow((*i).second, 2.0);
     if(query_feature.end() != query_feature.find((*i).first)){
       inner += (*i).second * query_feature[(*i).first];
+      norm_q += (query_feature[(*i).first], 2.0);
     }
   }
 
-  for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
-    norm_q += pow(i->second, 2.0);
-  }
+//   for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
+//     norm_q += pow(i->second, 2.0);
+//   }
 
   if(norm_q > 0 && norm_d > 0){
     return inner / (pow(norm_q, 0.5) * pow(norm_d, 0.5));
