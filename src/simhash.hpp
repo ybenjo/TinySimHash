@@ -98,9 +98,6 @@ public:
   void search_b_nearest_data(unint b);
   double calculate_cosine_distance(unint d_id_1, unint d_id_2);
   void calc_b_nearest_cosine_distance(unint b);
-
-  //query normalization
-  void query_normalization(bool normal_flag);
   
   //TokyoTyrant
   //setter

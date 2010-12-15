@@ -317,15 +317,19 @@ void SimHash::save_feature_to_tt(char* feature_server_address){
     exit(1);
   }
 
-  //クエリごとにvector<f_id, value>の形式でデータを持っているのでそれを
-  //クエリ string(f_id:value f_id:value)の形式に加工する
+  //クエリごとに vector<f_id, value> の形式でデータを持っているのでそれを
+  //クエリ string( f_id:value f_id:value ) の形式に加工する
   for(unordered_map<unint, vector<pair<unint, double> > >::iterator x = feature_table.begin(); x != feature_table.end(); ++x){
     ostringstream d_id;
     d_id << x->first;
     ostringstream oss;
+    
+    //
+    oss.precision(20);
+    
     for(vector<pair<unint, double> >::iterator y = (x->second).begin(); y != (x->second).end(); ++y){
       if(y != (x->second).begin()){oss << " ";}
-      oss << (*y).first << ":" << (*y).second;
+      oss << (*y).first << ":" << fixed << (*y).second;
     }
 
     //保存しつつエラーチェック
@@ -691,18 +695,4 @@ void SimHash::bit_xor(int k){
     }
   }
   near_ids = near_k_ids;
-}
-
-void SimHash::query_normalization(bool normal_flag){
-  if(normal_flag){
-    cout << "query normalization" << endl;
-    double sum = 0.0;
-    for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
-      sum += i->second;
-    }
-
-    for(unordered_map<unint, double>::iterator i = query_feature.begin(); i != query_feature.end(); ++i){
-      query_feature[i->first] /= sum;
-    }
-  }
 }
