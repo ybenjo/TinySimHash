@@ -290,7 +290,7 @@ void SimHash::save_near_cosines_to_file(int limit){
   oss << input_query_name << ".out";
   ofstream ofs;
   ofs.open((oss.str()).c_str());
-  int count = 1;
+  int count = 0;
   for(vector<pair<unint, double> >::iterator i = near_cosines.begin(); i != near_cosines.end(); ++i){
     if((*i).second > 0){
       ofs << (*i).first << "," << (*i).second << endl;
